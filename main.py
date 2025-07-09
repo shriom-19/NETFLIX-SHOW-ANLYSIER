@@ -8,6 +8,11 @@ from algo import country_fil, year_fil, genre_fil, top10_by_type, fdata
 from tkinter import *
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import os
+
+# Ensure display is set for VNC
+if 'DISPLAY' not in os.environ:
+    os.environ['DISPLAY'] = ':0'
 
 # Configure matplotlib to use a GUI backend
 matplotlib.use('TkAgg')
