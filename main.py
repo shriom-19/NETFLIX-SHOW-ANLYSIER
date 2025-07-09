@@ -11,6 +11,35 @@ from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 
+class ToolTip:
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+
+    def show_tip(self, text):
+        if self.tipwindow or not text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 25
+        y = y + cy + self.widget.winfo_rooty() + 25
+        self.tipwindow = tw = Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = Label(tw, text=text, justify=LEFT,
+                      background="#2a2a2a", foreground="white",
+                      relief=SOLID, borderwidth=1,
+                      font=("Arial", "10", "normal"),
+                      wraplength=400)
+        label.pack(ipadx=1)
+
+    def hide_tip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
 # Ensure display is set for VNC
 if 'DISPLAY' not in os.environ:
     os.environ['DISPLAY'] = ':0'
@@ -230,11 +259,11 @@ def show_graph():
 
     # Style the axes
     ax.tick_params(colors='white')
+    ax.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
     ax.spines['bottom'].set_color('white')
     ax.spines['left'].set_color('white')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.grid(axis='x', alpha=0.3, color='white')
 
     plt.tight_layout()
 
@@ -307,14 +336,36 @@ def show_table():
     tree.column('Duration', width=100, anchor='center')
     tree.column('Release Year', width=100, anchor='center')
 
+    # Store descriptions for tooltip
+    descriptions = {}
+    
     # Insert data
     for _, row in top30.iterrows():
-        tree.insert('', 'end', values=[
+        item_id = tree.insert('', 'end', values=[
             row['title'],
             f"{row['imdb_rating']:.1f}",
             row['duration'],
             row['release_year']
         ])
+        # Store description for this item
+        descriptions[item_id] = row['description'] if pd.notna(row['description']) else "No description available"
+
+    # Create tooltip
+    tooltip = ToolTip(tree)
+    
+    def on_motion(event):
+        item = tree.identify_row(event.y)
+        if item and item in descriptions:
+            tooltip.show_tip(f"{descriptions[item][:300]}{'...' if len(descriptions[item]) > 300 else ''}")
+        else:
+            tooltip.hide_tip()
+    
+    def on_leave(event):
+        tooltip.hide_tip()
+    
+    # Bind events for tooltip
+    tree.bind('<Motion>', on_motion)
+    tree.bind('<Leave>', on_leave)
 
     tree.pack(side='left', fill='both', expand=True)
     v_scrollbar.config(command=tree.yview)
