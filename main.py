@@ -18,12 +18,17 @@ class ToolTip:
         self.id = None
         self.x = self.y = 0
 
-    def show_tip(self, text):
+    def show_tip(self, text, x=None, y=None):
         if self.tipwindow or not text:
             return
-        x, y, cx, cy = self.widget.bbox("insert")
-        x = x + self.widget.winfo_rootx() + 25
-        y = y + cy + self.widget.winfo_rooty() + 25
+        
+        if x is None or y is None:
+            x = self.widget.winfo_rootx() + 25
+            y = self.widget.winfo_rooty() + 25
+        else:
+            x = x + self.widget.winfo_rootx() + 25
+            y = y + self.widget.winfo_rooty() + 25
+            
         self.tipwindow = tw = Toplevel(self.widget)
         tw.wm_overrideredirect(1)
         tw.wm_geometry("+%d+%d" % (x, y))
@@ -352,15 +357,25 @@ def show_table():
 
     # Create tooltip
     tooltip = ToolTip(tree)
+    current_item = None
     
     def on_motion(event):
+        nonlocal current_item
         item = tree.identify_row(event.y)
-        if item and item in descriptions:
-            tooltip.show_tip(f"{descriptions[item][:300]}{'...' if len(descriptions[item]) > 300 else ''}")
-        else:
+        
+        if item != current_item:
             tooltip.hide_tip()
+            current_item = item
+            
+        if item and item in descriptions:
+            description = descriptions[item]
+            if len(description) > 300:
+                description = description[:300] + "..."
+            tooltip.show_tip(description, event.x, event.y)
     
     def on_leave(event):
+        nonlocal current_item
+        current_item = None
         tooltip.hide_tip()
     
     # Bind events for tooltip
