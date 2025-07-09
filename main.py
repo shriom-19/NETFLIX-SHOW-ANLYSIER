@@ -1,3 +1,4 @@
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,106 +18,176 @@ if 'DISPLAY' not in os.environ:
 # Configure matplotlib to use a GUI backend
 matplotlib.use('TkAgg')
 
+# Create main window
 root = Tk()
-root.title('NETFLIX SHOWS')
+root.title('Netflix Shows Explorer')
+root.configure(bg='#1a1a1a')
 
 # Fullscreen
 width = root.winfo_screenwidth()
 height = root.winfo_screenheight()
 root.geometry(f"{width}x{height}")
 
-# -------------------------------
-# Scrollable Canvas + Frame Setup
-canvas = Canvas(root, bg='#141414')
-container = Frame(root, bg="#141414")
-container.pack(expand=True, fill=BOTH)
+# Configure styles
+style = ttk.Style()
+style.theme_use('clam')
 
-canvas = Canvas(container, bg='#141414')
-canvas.pack(side=LEFT, fill=BOTH, expand=True)
+# Configure custom styles
+style.configure('Title.TLabel', 
+                background='#1a1a1a', 
+                foreground='#e50914',
+                font=('Arial', 24, 'bold'))
 
-v_scrollbar = Scrollbar(container, orient='vertical', command=canvas.yview)
-v_scrollbar.pack(side=RIGHT, fill=Y)
+style.configure('Header.TLabel', 
+                background='#1a1a1a', 
+                foreground='#ffffff',
+                font=('Arial', 14, 'bold'))
 
-canvas.configure(yscrollcommand=v_scrollbar.set)
+style.configure('Custom.TCombobox',
+                fieldbackground='#333333',
+                background='#333333',
+                foreground='#ffffff',
+                borderwidth=1,
+                relief='solid')
 
-# --- Main Frame inside canvas ---
-main_frame = Frame(canvas,
-                   bg="#141414",
-                   borderwidth=0,
-                   relief='flat',
-                   highlightbackground='#000000',
-                   highlightthickness=0)
-canvas_window = canvas.create_window((width // 2, 0), window=main_frame, anchor='n')
+style.configure('Custom.TFrame',
+                background='#1a1a1a',
+                relief='flat')
 
-# Center main_frame horizontally on resize
-def center_main_frame(event):
-    canvas.coords(canvas_window, event.width // 2, 0)
+style.configure('Card.TFrame',
+                background='#2a2a2a',
+                relief='raised',
+                borderwidth=2)
 
-canvas.bind("<Configure>", center_main_frame)
+# Main container with padding
+main_container = Frame(root, bg='#1a1a1a')
+main_container.pack(fill=BOTH, expand=True, padx=20, pady=20)
 
+# Title section
+title_frame = Frame(main_container, bg='#1a1a1a')
+title_frame.pack(fill=X, pady=(0, 30))
 
-sub_frame = Frame(main_frame, bg='#141414')
-sub_frame.grid(row=1, column=0, sticky='NSEW', columnspan= 5)
+title_label = Label(title_frame,
+                   text='🎬 NETFLIX SHOWS EXPLORER',
+                   font=('Arial', 28, 'bold'),
+                   fg='#e50914',
+                   bg='#1a1a1a')
+title_label.pack()
 
+subtitle_label = Label(title_frame,
+                      text='Discover and explore Netflix shows with interactive charts',
+                      font=('Arial', 12),
+                      fg='#cccccc',
+                      bg='#1a1a1a')
+subtitle_label.pack(pady=(5, 0))
 
-# --- Scrollregion Update ---
-def update_scrollregion(event):
-    canvas.configure(scrollregion=canvas.bbox("all"))
+# Controls section
+controls_frame = Frame(main_container, bg='#2a2a2a', relief='raised', bd=2)
+controls_frame.pack(fill=X, pady=(0, 20), padx=10, ipady=15, ipadx=15)
 
+controls_title = Label(controls_frame,
+                      text='📊 Filter Options',
+                      font=('Arial', 16, 'bold'),
+                      fg='#ffffff',
+                      bg='#2a2a2a')
+controls_title.pack(pady=(0, 15))
 
-main_frame.bind("<Configure>", update_scrollregion)
+# Create a grid for controls
+controls_grid = Frame(controls_frame, bg='#2a2a2a')
+controls_grid.pack()
 
+# Type selection
+type_frame = Frame(controls_grid, bg='#2a2a2a')
+type_frame.grid(row=0, column=0, padx=20, pady=10, sticky='w')
 
+type_label = Label(type_frame,
+                  text='Content Type:',
+                  font=('Arial', 12, 'bold'),
+                  fg='#ffffff',
+                  bg='#2a2a2a')
+type_label.pack(anchor='w')
 
-
-# -------------------------------
-# GUI Content
-label1 = Label(main_frame,
-               text='NETFLIX SHOWS',
-               font=("Helvetica", 28, "italic bold"),
-               fg='#e30913',
-               bg='#141414')
-label1.grid(sticky='NSEW', row=0, columnspan=5, pady=10)
-
-# type Dropdown
-sublabel1 = Label(sub_frame,
-                  text='Type:',
-                  font='Arial 12 bold',
-                  fg='grey',
-                  bg='#141414')
-sublabel1.grid(row=1, column=0, sticky='NSWE', padx=(10, 0))
-
-typelist = ttk.Combobox(sub_frame, values=shows, state="readonly")
-typelist.grid(row=1, column=2, sticky='NSWE', padx=10, pady=10)
+typelist = ttk.Combobox(type_frame, 
+                       values=shows, 
+                       state="readonly",
+                       font=('Arial', 10),
+                       width=15)
+typelist.pack(pady=(5, 0))
 typelist.current(0)
 
-#country dropdown
-sublabel2 = Label(sub_frame,
-                  text='country:',
-                  font='Arial 12 bold',
-                  fg='grey',
-                  bg='#141414')
-sublabel2.grid(row=1, column=3, sticky='nswE', padx=(10, 0))
+# Country selection
+country_frame = Frame(controls_grid, bg='#2a2a2a')
+country_frame.grid(row=0, column=1, padx=20, pady=10, sticky='w')
 
-countrylist = ttk.Combobox(sub_frame, values=country_list, state="readonly")
-countrylist.grid(row=1, column=4, sticky='nswE', padx=10, pady=10)
+country_label = Label(country_frame,
+                     text='Country:',
+                     font=('Arial', 12, 'bold'),
+                     fg='#ffffff',
+                     bg='#2a2a2a')
+country_label.pack(anchor='w')
 
+countrylist = ttk.Combobox(country_frame, 
+                          values=country_list, 
+                          state="readonly",
+                          font=('Arial', 10),
+                          width=20)
+countrylist.pack(pady=(5, 0))
 countrylist.current(0)
 
-# Bind combobox selection to update function
+# Genre selection
+genre_frame = Frame(controls_grid, bg='#2a2a2a')
+genre_frame.grid(row=0, column=2, padx=20, pady=10, sticky='w')
 
-label2 = Label(sub_frame,
-               text=f"TOP 10 {typelist.get()} ",
-               font=("Helvetica", 15, "italic bold"),
-               fg='#ae0610',
-               bg='#141414')
+genre_label = Label(genre_frame,
+                   text='Genre:',
+                   font=('Arial', 12, 'bold'),
+                   fg='#ffffff',
+                   bg='#2a2a2a')
+genre_label.pack(anchor='w')
 
-filtered_data = country_fil(fdata, '0')
-# top10_by_type(fdata, typelist.get())
+genrelist = ttk.Combobox(genre_frame, 
+                        values=all_genres, 
+                        state="readonly",
+                        font=('Arial', 10),
+                        width=20)
+genrelist.pack(pady=(5, 0))
+genrelist.current(0)
 
-graph_frame = Frame(sub_frame, bg='#141414')
-graph_frame.grid(sticky='n', row=2, column=0, columnspan=5, pady=(0, 10))
+# Charts section with tabs
+notebook = ttk.Notebook(main_container)
+notebook.pack(fill=BOTH, expand=True, pady=(0, 10))
 
+# Tab 1: Top 10 Chart
+tab1 = Frame(notebook, bg='#1a1a1a')
+notebook.add(tab1, text='📈 Top 10 Rankings')
+
+# Chart title for tab 1
+chart1_title = Label(tab1,
+                    text="Top 10 Shows",
+                    font=('Arial', 18, 'bold'),
+                    fg='#e50914',
+                    bg='#1a1a1a')
+chart1_title.pack(pady=15)
+
+# Graph frame for tab 1
+graph_frame = Frame(tab1, bg='#1a1a1a')
+graph_frame.pack(fill=BOTH, expand=True, padx=20, pady=10)
+
+# Tab 2: Detailed List
+tab2 = Frame(notebook, bg='#1a1a1a')
+notebook.add(tab2, text='📋 Detailed View')
+
+# Chart title for tab 2
+chart2_title = Label(tab2,
+                    text="Detailed Show Information",
+                    font=('Arial', 18, 'bold'),
+                    fg='#e50914',
+                    bg='#1a1a1a')
+chart2_title.pack(pady=15)
+
+# Table frame for tab 2
+table_frame = Frame(tab2, bg='#1a1a1a')
+table_frame.pack(fill=BOTH, expand=True, padx=20, pady=10)
 
 def show_graph():
     for widget in graph_frame.winfo_children():
@@ -127,114 +198,50 @@ def show_graph():
     top10 = filtered[filtered['type'] == typelist.get()].sort_values(
         by='imdb_rating', ascending=False).head(10)
 
-    # Plot setup
-    fig, ax = plt.subplots(figsize=(6, 4))
-    fig.patch.set_facecolor('#141414')  # Full figure background
-    ax.set_facecolor('#141414')  # Plot area background
-    sns.set_style("dark")  # Optional dark mode style
+    if top10.empty:
+        no_data_label = Label(graph_frame,
+                             text="No data available for selected filters",
+                             font=('Arial', 14),
+                             fg='#cccccc',
+                             bg='#1a1a1a')
+        no_data_label.pack(expand=True)
+        return
 
-    # Barplot
-    bars = sns.barplot(
-        x='imdb_rating',
-        y='title',
-        data=top10,
-        ax=ax,
-        color='#e90000',
-        linewidth=0,  # no border width
-        edgecolor='none')
+    # Plot setup with Netflix-style colors
+    fig, ax = plt.subplots(figsize=(12, 8))
+    fig.patch.set_facecolor('#1a1a1a')
+    ax.set_facecolor('#1a1a1a')
 
-    # Add white rating text on bars
-    for bar in bars.patches:
-        rating = bar.get_width()
-        y = bar.get_y() + bar.get_height() / 2
-        ax.text(rating - 0.5,
-                y,
-                f'{rating:.1f}',
-                color='white',
-                va='center',
-                ha='right',
-                fontsize=9)
+    # Create horizontal bar chart
+    bars = ax.barh(range(len(top10)), top10['imdb_rating'], 
+                   color='#e50914', alpha=0.8, height=0.7)
 
-    # Title styling
-    ax.set_title(f"Top 10 {typelist.get()}s in {countrylist.get()}",
-                 color='white',
-                 fontsize=14)
+    # Customize the chart
+    ax.set_yticks(range(len(top10)))
+    ax.set_yticklabels(top10['title'], fontsize=10, color='white')
+    ax.set_xlabel('IMDb Rating', fontsize=12, color='white')
+    ax.set_title(f'Top 10 {typelist.get()}s in {countrylist.get()}', 
+                fontsize=16, color='white', pad=20)
 
-    # Remove x-axis and y-axis labels & ticks
-    ax.set_xlabel("")
-    ax.set_xticks([])
-    ax.tick_params(axis='x', bottom=False, colors='white')
-    ax.tick_params(axis='y', colors='white')
+    # Add rating labels on bars
+    for i, (bar, rating) in enumerate(zip(bars, top10['imdb_rating'])):
+        ax.text(rating - 0.3, i, f'{rating:.1f}', 
+               va='center', ha='right', color='white', fontweight='bold')
 
-    # Remove outer spines (borders)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
+    # Style the axes
+    ax.tick_params(colors='white')
+    ax.spines['bottom'].set_color('white')
+    ax.spines['left'].set_color('white')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(axis='x', alpha=0.3, color='white')
 
-    fig.tight_layout()
+    plt.tight_layout()
 
     # Embed in Tkinter
     canvas = FigureCanvasTkAgg(fig, master=graph_frame)
     canvas.draw()
-    canvas.get_tk_widget().pack()
-
-
-def update_graph_label(event=None):
-    selected_type = typelist.get()
-    selected_country = countrylist.get()
-
-    # Update top title label
-    label2.config(
-        text=
-        f"TOP 10 {selected_type.upper()} SHOWS IN {selected_country.upper()}")
-
-    # Show updated graph
-    show_graph()
-
-
-typelist.bind("<<ComboboxSelected>>", update_graph_label)
-countrylist.bind("<<ComboboxSelected>>", update_graph_label)
-
-update_graph_label()
-label2.grid(sticky='EW', row=0, column=0, columnspan=5, pady=10)
-#genreframe
-genre_frame = Frame(main_frame, bg='#595959')
-genre_frame.grid(row=2,
-                 column=0,
-                 sticky='EW',
-                 columnspan=5,
-                 ipady=10,
-                 ipadx=20)
-
-glabel1 = Label(genre_frame,
-                text=f"Best {typelist.get()} of your genre ",
-                font=("Helvetica", 15, "italic bold"),
-                fg='#ffffff',
-                bg='#595959',
-                bd=3,
-                highlightbackground='#000000')
-update_graph_label()
-glabel1.grid(sticky='nsEW', row=0, column=0, columnspan=5, pady=20)
-
-# gene drop down
-
-# Add more widgets (e.g., genre, year, plots) below
-
-#display graph
-glabel2 = Label(genre_frame,
-                text='Genre:',
-                font='Arial 14 italic',
-                fg='white',
-                bg='#595959')
-glabel2.grid(row=1, column=0, sticky='snwE', padx=(10, 0))
-
-genrelist = ttk.Combobox(genre_frame, values=all_genres, state="readonly")
-genrelist.grid(row=1, column=1, sticky='wsnE', padx=10, pady=10)
-genrelist.current(0)
-
-genrelist.bind("<<ComboboxSelected>>", update_graph_label)
-
-table_frame = Frame(genre_frame, bg='#595959')
-table_frame.grid(row=3, column=1, columnspan=5, sticky='nEW')
+    canvas.get_tk_widget().pack(fill=BOTH, expand=True)
 
 def show_table():
     for widget in table_frame.winfo_children():
@@ -242,112 +249,114 @@ def show_table():
 
     # Filter data
     filtered = country_fil(fdata.copy(), countrylist.get())
-    filtered = genre_fil(filtered, genrelist.get())
-    top10 = filtered[filtered['type'] == typelist.get()].sort_values(
+    if genrelist.get() != all_genres[0]:  # If not "All Genres"
+        filtered = genre_fil(filtered, genrelist.get())
+    
+    top30 = filtered[filtered['type'] == typelist.get()].sort_values(
         by='imdb_rating', ascending=False).head(30)
 
-    # Only keep desired columns
-    selected_cols = ['title', 'imdb_rating', 'duration', 'description']
-    top10 = top10[selected_cols].copy()
+    if top30.empty:
+        no_data_label = Label(table_frame,
+                             text="No data available for selected filters",
+                             font=('Arial', 14),
+                             fg='#cccccc',
+                             bg='#1a1a1a')
+        no_data_label.pack(expand=True)
+        return
 
-    if top10.empty:
-        Label(table_frame,
-              text="No data available for selected filters.",
-              fg='white',
-              bg='#595959',
-              font=("Arial", 12, "italic")).pack()
-        return  # Properly indented
+    # Create table with scrollbars
+    table_container = Frame(table_frame, bg='#1a1a1a')
+    table_container.pack(fill=BOTH, expand=True)
 
     # Scrollbars
-    vsb = Scrollbar(table_frame, orient="vertical")
-    vsb.pack(side='right', fill='y')
+    v_scrollbar = Scrollbar(table_container, orient="vertical")
+    v_scrollbar.pack(side='right', fill='y')
 
-    hsb = Scrollbar(table_frame, orient="horizontal")
-    hsb.pack(side='bottom', fill='x')
+    h_scrollbar = Scrollbar(table_container, orient="horizontal")
+    h_scrollbar.pack(side='bottom', fill='x')
 
-    # Create Treeview
-    style = ttk.Style()
-    style.theme_use("default")
-    style.configure("Treeview",
-                    background="#1e1e1e",
-                    foreground="white",
-                    rowheight=40,
-                    fieldbackground="#1e1e1e",
-                    font=('Helvetica', 10))
-    style.configure("Treeview.Heading",
-                    background="#e30913",
-                    foreground="white",
-                    font=('Helvetica', 11, 'bold'))
+    # Configure treeview style
+    style.configure("Custom.Treeview",
+                   background="#2a2a2a",
+                   foreground="white",
+                   rowheight=30,
+                   fieldbackground="#2a2a2a",
+                   font=('Arial', 10))
+    style.configure("Custom.Treeview.Heading",
+                   background="#e50914",
+                   foreground="white",
+                   font=('Arial', 11, 'bold'))
 
-    tree = ttk.Treeview(table_frame,
-                        columns=selected_cols,
-                        show='headings',
-                        yscrollcommand=vsb.set,
-                        xscrollcommand=hsb.set)
+    # Create treeview
+    columns = ['Title', 'Rating', 'Duration', 'Release Year']
+    tree = ttk.Treeview(table_container,
+                       columns=columns,
+                       show='headings',
+                       style="Custom.Treeview",
+                       yscrollcommand=v_scrollbar.set,
+                       xscrollcommand=h_scrollbar.set)
 
-    for col in selected_cols:
-        width = 250 if col == 'title' else 300 if col == 'description' else 120
-        tree.heading(col, text=col.capitalize())
-        tree.column(col, width=width, anchor='w')
+    # Configure columns
+    tree.heading('Title', text='Title')
+    tree.heading('Rating', text='IMDb Rating')
+    tree.heading('Duration', text='Duration')
+    tree.heading('Release Year', text='Year')
 
-    for _, row in top10.iterrows():
-        tree.insert('', 'end', values=list(row))
+    tree.column('Title', width=300, anchor='w')
+    tree.column('Rating', width=100, anchor='center')
+    tree.column('Duration', width=100, anchor='center')
+    tree.column('Release Year', width=100, anchor='center')
+
+    # Insert data
+    for _, row in top30.iterrows():
+        tree.insert('', 'end', values=[
+            row['title'],
+            f"{row['imdb_rating']:.1f}",
+            row['duration'],
+            row['release_year']
+        ])
 
     tree.pack(side='left', fill='both', expand=True)
-    vsb.config(command=tree.yview)
-    hsb.config(command=tree.xview)
+    v_scrollbar.config(command=tree.yview)
+    h_scrollbar.config(command=tree.xview)
 
-    # ----------- Tooltip Logic for Description Hover -----------
-    tooltip = Label(table_frame,
-                    text="",
-                    bg="grey",
-                    fg="white",
-                    wraplength=400,
-                    font=('Helvetica', 10),
-                    relief='solid',
-                    borderwidth=1)
-    tooltip.place_forget()
-
-    def on_motion(event):
-        region = tree.identify_region(event.x, event.y)
-        col = tree.identify_column(event.x)
-        row_id = tree.identify_row(event.y)
-
-        if region == "cell" and col == "#4":  # Description is the 4th column
-            item = tree.item(row_id)
-            if item and item["values"]:
-                desc = item["values"][3]  # Description
-                tooltip.config(text=desc)
-                tooltip.place(x=event.x_root - tree.winfo_rootx() - 300,
-                              y=event.y_root - tree.winfo_rooty() + 20)
-        else:
-            tooltip.place_forget()
-
-    def on_leave(event):
-        tooltip.place_forget()
-
-    tree.bind("<Motion>", on_motion)
-    tree.bind("<Leave>", on_leave)
-
-
-
-def update_table_label(event=None):
+def update_displays():
+    show_graph()
+    show_table()
+    
+    # Update chart titles
+    selected_country = countrylist.get()
     selected_type = typelist.get()
     selected_genre = genrelist.get()
+    
+    title1 = f"Top 10 {selected_type}s"
+    if selected_country != country_list[0]:
+        title1 += f" in {selected_country}"
+    chart1_title.config(text=title1)
+    
+    title2 = f"Detailed {selected_type} Information"
+    if selected_genre != all_genres[0]:
+        title2 += f" - {selected_genre}"
+    chart2_title.config(text=title2)
 
-    # Update genre header label
-    glabel1.config(
-        text=f"Best {selected_type} of your genre: {selected_genre}"
-        if selected_genre != '0' else f"Best {selected_type} of your genre")
+# Bind events
+typelist.bind("<<ComboboxSelected>>", lambda e: update_displays())
+countrylist.bind("<<ComboboxSelected>>", lambda e: update_displays())
+genrelist.bind("<<ComboboxSelected>>", lambda e: update_displays())
 
-    # Show updated table
-    show_table()
+# Status bar
+status_frame = Frame(main_container, bg='#333333', height=30)
+status_frame.pack(fill=X, side=BOTTOM)
 
+status_label = Label(status_frame,
+                    text="Ready | Use the filters above to explore Netflix content",
+                    font=('Arial', 10),
+                    fg='#cccccc',
+                    bg='#333333')
+status_label.pack(side=LEFT, padx=10, pady=5)
 
-# display table from row 3 to 13,23,33
-genrelist.bind("<<ComboboxSelected>>", update_table_label)
+# Initialize displays
+update_displays()
 
-update_graph_label()
-update_table_label()
-
+# Start the GUI
 root.mainloop()
