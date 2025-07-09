@@ -1,14 +1,16 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from pandas._config import display
-from pandas.core.methods import describe
 import seaborn as sns
 from subpart import all_genres, country_list, year, shows
 from algo import country_fil, year_fil, genre_fil, top10_by_type, fdata
 from tkinter import *
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+# Configure matplotlib to use a GUI backend
+matplotlib.use('TkAgg')
 
 root = Tk()
 root.title('NETFLIX SHOWS')
